@@ -7,7 +7,8 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Runtime.Intrinsics;
+using System.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace MCT.Function
 {
@@ -15,22 +16,26 @@ namespace MCT.Function
     {
         [FunctionName("AddRegistrations")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v1/AddRegistrations")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v1/registrations")] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string name = req.Query["name"];
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            var registration = Jsonconvert.DeserialiseObject
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+            string ConnectionString = Environment.GetEnvironmentVariable("ConnectionString");
+            SqlConnection sqlConnection = new SqlConnection(ConnectionString);
+            await sqlConnection.OpenAsync();
 
-            return new OkObjectResult(responseMessage);
+            SqlCommand sqlCommand = new SqlCommand("insert into Registrations (Lastname, firstname, email, zipcode, age, isfirsttimer) values (@Lastname, @firstname, @email, @zipcode, @age, @isfirsttimer)", sqlConnection);
+
+            sqlCommand.Parameters.AddWithValue("@Lastname", LastName);
+            sqlCommand.Parameters.AddWithValue("@firstname", LastName);
+            sqlCommand.Parameters.AddWithValue("@email", LastName);
+            sqlCommand.Parameters.AddWithValue("@zipcode", LastName);
+            sqlCommand.Parameters.AddWithValue("@age", LastName);
+            sqlCommand.Parameters.AddWithValue("@isfirsttimer", LastName);
+
+            return new OkObjectResult("");
         }
     }
 }
