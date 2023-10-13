@@ -19,7 +19,7 @@ namespace MCT.Function
         {
 
 
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult("");
         }
     }
 }

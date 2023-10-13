@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Collections.Generic;
+using MCT.Models;
+using System.Data;
 
 namespace MCT.Function
 {
@@ -20,20 +22,24 @@ namespace MCT.Function
             ILogger log)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var registration = Jsonconvert.DeserialiseObject
+            var registration = JsonConvert.DeserializeObject<Registration>(requestBody);
 
             string ConnectionString = Environment.GetEnvironmentVariable("ConnectionString");
             SqlConnection sqlConnection = new SqlConnection(ConnectionString);
             await sqlConnection.OpenAsync();
 
-            SqlCommand sqlCommand = new SqlCommand("insert into Registrations (Lastname, firstname, email, zipcode, age, isfirsttimer) values (@Lastname, @firstname, @email, @zipcode, @age, @isfirsttimer)", sqlConnection);
+            registration.RegistrationId = Guid.NewGuid().ToString();
 
-            sqlCommand.Parameters.AddWithValue("@Lastname", LastName);
-            sqlCommand.Parameters.AddWithValue("@firstname", LastName);
-            sqlCommand.Parameters.AddWithValue("@email", LastName);
-            sqlCommand.Parameters.AddWithValue("@zipcode", LastName);
-            sqlCommand.Parameters.AddWithValue("@age", LastName);
-            sqlCommand.Parameters.AddWithValue("@isfirsttimer", LastName);
+            SqlCommand sqlCommand = new SqlCommand("insert into Registrations (RegistrationId, Lastname, firstname, email, zipcode, age, isfirsttimer) values (@RegistrationId, @Lastname, @firstname, @email, @zipcode, @age, @isfirsttimer)", sqlConnection);
+            sqlCommand.Parameters.AddWithValue("@RegistrationId", registration.RegistrationId);
+            sqlCommand.Parameters.AddWithValue("@Lastname", registration.LastName);
+            sqlCommand.Parameters.AddWithValue("@firstname", registration.FirstName);
+            sqlCommand.Parameters.AddWithValue("@email", registration.Email);
+            sqlCommand.Parameters.AddWithValue("@zipcode", registration.Zipcode);
+            sqlCommand.Parameters.AddWithValue("@age", registration.Age);
+            sqlCommand.Parameters.AddWithValue("@isfirsttimer", registration.IsFirstTimer);
+
+            await sqlCommand.ExecuteNonQueryAsync();
 
             return new OkObjectResult("");
         }
